@@ -15,7 +15,13 @@ import string
 from wordcloud import WordCloud, STOPWORDS
 from PIL import Image
 import nltk
+from tqdm import tqdm
+
+# Comment below after first run #
 # nltk.downloader.download('stopwords')
+# nltk.downloader.download('vader_lexicon')
+# ----------------------------- #
+
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from langdetect import detect
 from nltk.stem import SnowballStemmer
@@ -30,13 +36,12 @@ plt.style.use('fivethirtyeight')
 
 tok = WordPunctTokenizer()
 
-
 # Global Variables
 
-query = "Police Assault"
-limit = 1000
-# query = input("Enter Keyword : ")
-# limit = input("Enter Tweet Count Limit : ")
+# query = "Police Assault"
+# limit = 1000
+query = input("Enter Keyword : ")
+limit = input("Enter Tweet Count Limit : ")
 positive = 0
 negative = 0
 neutral = 0
@@ -45,6 +50,7 @@ tweet_list = []
 neutral_list = []
 negative_list = []
 positive_list = []
+pbar = tqdm(total=limit)
 
 
 # Format Specific Variables
@@ -79,12 +85,12 @@ def tweet_formatter(text):
     words = [x for x  in tok.tokenize(letters_only) if len(x) > 1]
     updatedText = (" ".join(words)).strip()
     tweet_list.append(updatedText)
-    senimental_analysis(updatedText)
+    sentimental_analysis(updatedText)
 
 
 # Sentimental analysing and scoring function
 
-def senimental_analysis(text):
+def sentimental_analysis(text):
     analysis = TextBlob(text)
     score = SentimentIntensityAnalyzer().polarity_scores(text)
     neg = score['neg']
@@ -118,11 +124,15 @@ def percentage(part,whole):
 for tweet in sntwitter.TwitterSearchScraper(query).get_items():
     
     if len(tweet_list) == limit:
+        pbar.close()
+        print("DATA FETCHING SUCCESSFULLY COMPLETED")
         break
     else:
+        pbar.update(1)
+        # tweet_list.append(tweet.content)
         tweet_formatter(tweet.content)
 
-
+# """
 positive = percentage(positive, limit)
 negative = percentage(negative, limit)
 neutral = percentage(neutral, limit)
@@ -159,7 +169,8 @@ plt.style.use('default')
 plt.legend(labels)
 plt.title("Sentiment Analysis Result for keyword : " + query)
 plt.axis('equal')
-plt.show()
+plt.savefig('PieCart.png')
+# plt.show()
 
 
 # Eliminating duplicates and creating new DF
@@ -344,7 +355,8 @@ count_vect_df.head()
 count = pd.DataFrame(count_vect_df.sum())
 countdf = count.sort_values(0,ascending=False).head(20)
 countdf[1:11]
-
+Mostcount = countdf[1:11]
+Mostcount.to_csv('Mostcount.csv')
 
 #Function to ngram
 
@@ -360,10 +372,12 @@ def get_top_n_gram(corpus,ngram_range,n=None):
 #n2_bigram
 
 n2_bigrams = get_top_n_gram(tw_list['text'],(2,2),20)
-print(n2_bigrams)
-
+# print(n2_bigrams)
+n2_bigrams.to_csv('n2_bigrams.csv')
 
 #n3_trigram
 
 n3_trigrams = get_top_n_gram(tw_list['text'],(3,3),20)
-print(n3_trigrams)
+# print(n3_trigrams)
+n3_trigrams.to_csv('n3_bigrams.csv')
+# """
