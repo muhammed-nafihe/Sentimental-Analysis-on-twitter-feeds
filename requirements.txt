@@ -37,4 +37,3 @@ threadpoolctl==3.1.0
 tqdm==4.64.0
 tweepy==4.10.0
 urllib3==1.26.9
-wordcloud @ wordcloud-1.8.1-cp310-cp310-win_amd64.whl
