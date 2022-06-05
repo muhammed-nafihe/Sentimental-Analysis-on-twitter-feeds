@@ -15,11 +15,10 @@ Activate the venv
 venv\Scripts\activate.bat
 ```
 
-- change the path of wordcloud whl file mentioned in requirements.txt file
-
 Install the modules mentioned in requirements.txt file
 ```bash
 pip install requirements.txt
+pip install wordcloud-1.8.1-cp310-cp310-win_amd64.whl
 ```
 
 ## Runner

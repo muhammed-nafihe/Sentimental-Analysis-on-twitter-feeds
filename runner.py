@@ -2,25 +2,23 @@
 
 from typing import final
 from textblob import TextBlob
-import sys
-import tweepy
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import os
 import nltk
-import pycountry
 import re
 import string
 from wordcloud import WordCloud, STOPWORDS
 from PIL import Image
 import nltk
 from tqdm import tqdm
+import dataframe_image as dfi
+import webbrowser as wb
 
-# Comment below after first run #
+
+# Comment below after first run 
 # nltk.downloader.download('stopwords')
 # nltk.downloader.download('vader_lexicon')
-# ----------------------------- #
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from langdetect import detect
@@ -38,10 +36,8 @@ tok = WordPunctTokenizer()
 
 # Global Variables
 
-# query = "Police Assault"
-# limit = 1000
 query = input("Enter Keyword : ")
-limit = input("Enter Tweet Count Limit : ")
+limit = int(input("Enter Tweet Count Limit : "))
 positive = 0
 negative = 0
 neutral = 0
@@ -81,7 +77,6 @@ def tweet_formatter(text):
     lower_case = stripped.lower()
     neg_handled = neg_pattern.sub(lambda x: negations_dic[x.group()], lower_case)
     letters_only = re.sub("[^a-zA-Z]", " ", neg_handled)
-    # tokenizing and removing unneccessary white spaces
     words = [x for x  in tok.tokenize(letters_only) if len(x) > 1]
     updatedText = (" ".join(words)).strip()
     tweet_list.append(updatedText)
@@ -132,7 +127,7 @@ for tweet in sntwitter.TwitterSearchScraper(query).get_items():
         # tweet_list.append(tweet.content)
         tweet_formatter(tweet.content)
 
-# """
+
 positive = percentage(positive, limit)
 negative = percentage(negative, limit)
 neutral = percentage(neutral, limit)
@@ -148,30 +143,38 @@ tweet_list = pd.DataFrame(tweet_list)
 neutral_list = pd.DataFrame(neutral_list)
 negative_list = pd.DataFrame(negative_list)
 positive_list = pd.DataFrame(positive_list)
-print("total number: ",len(tweet_list))
-print("positive number: ",len(positive_list))
-print("negative number: ", len(negative_list))
-print("neutral number: ",len(neutral_list))
+tweetDetail = []
+text = "total Tweet Number: ",len(tweet_list)
+tweetDetail.append(text)
+text = "positive Tweet Number: ",len(positive_list)
+tweetDetail.append(text)
+text = "negative Tweet Number: ", len(negative_list)
+tweetDetail.append(text)
+text = "neutral Tweet Number: ",len(neutral_list)
+tweetDetail.append(text)
+
+tweetDetail = pd.DataFrame(tweetDetail)
+dfi.export(tweetDetail, 'results/tweetDetail.png')
 
 
 # Saving Dataset
 
-tweet_list.to_csv('dataset.csv')
+tweet_list.to_csv('results/dataset.csv')
+print("dataset Saved Successfully")
 
 
 #Creating PieCart
 
 labels = ['Positive ['+str(positive)+'%]' , 'Neutral ['+str(neutral)+'%]','Negative ['+str(negative)+'%]']
 sizes = [positive, neutral, negative]
-colors = ['yellowgreen', 'blue','red']
+colors = ['green', 'blue','red']
 patches, texts = plt.pie(sizes,colors=colors, startangle=90)
 plt.style.use('default')
 plt.legend(labels)
-plt.title("Sentiment Analysis Result for keyword : " + query)
+plt.title("Sentiment Analysis on keyword : " + query)
 plt.axis('equal')
-plt.savefig('PieCart.png')
-# plt.show()
-
+plt.savefig('results/PieCart.png')
+print("Piechart Saved Successfully")
 
 # Eliminating duplicates and creating new DF
 
@@ -229,22 +232,6 @@ def count_values_in_column(data,feature):
 count_values_in_column(tw_list,"sentiment")
 
 
-# create data for Pie Chart
-
-piechart = count_values_in_column(tw_list,"sentiment")
-names= piechart.index
-size=piechart["Percentage"]
- 
-
-# Create a circle for the center of the plot
-
-my_circle=plt.Circle( (0,0), 0.7, color='white')
-plt.pie(size, labels=names, colors=['green','blue','red'])
-p=plt.gcf()
-p.gca().add_artist(my_circle)
-plt.show()
-
-
 #Function to Create Wordcloud
 
 def create_wordcloud(text, name):
@@ -256,13 +243,8 @@ def create_wordcloud(text, name):
                   stopwords=stopwords,
                   repeat=True)
     wc.generate(str(text))
-    wc.to_file(name + "_wc.png")
-    print(name + "Word Cloud Saved Successfully")
-
-
-#Creating wordcloud for all tweets
-
-create_wordcloud(tw_list["text"].values, "Whole")
+    wc.to_file("results/" + name + "_wc.png")
+    print(name + " Word Cloud Saved Successfully")
 
 
 #Creating wordcloud for positive sentiment
@@ -336,19 +318,12 @@ def clean_text(text):
     tokens = re.split('\W+', text_rc)    # tokenization
     text = [ps.stem(word) for word in tokens if word not in stopword]  # remove stopwords and stemming
     return text
-print(tw_list)
-
 
 #Appliyng Countvectorizer
 
 countVectorizer = CountVectorizer(analyzer=clean_text) 
 countVector = countVectorizer.fit_transform(tw_list['text'])
-print('{} Number of reviews has {} words'.format(countVector.shape[0], countVector.shape[1]))
-print(countVectorizer.get_feature_names())
-
-count_vect_df = pd.DataFrame(countVector.toarray(), columns=countVectorizer.get_feature_names())
-count_vect_df.head()
-
+count_vect_df = pd.DataFrame(countVector.toarray(), columns=countVectorizer.get_feature_names_out()) # get_feature_names is getting debricated in 1.2
 
 # Most Used Words
 
@@ -356,8 +331,10 @@ count = pd.DataFrame(count_vect_df.sum())
 countdf = count.sort_values(0,ascending=False).head(20)
 countdf[1:11]
 Mostcount = countdf[1:11]
-Mostcount.to_csv('Mostcount.csv')
+dfi.export(Mostcount, 'results/MostUsedWords.png')
 
+
+# Ngram model helps us to predict most probabl2 word that might follow the sequence
 #Function to ngram
 
 def get_top_n_gram(corpus,ngram_range,n=None):
@@ -372,12 +349,8 @@ def get_top_n_gram(corpus,ngram_range,n=None):
 #n2_bigram
 
 n2_bigrams = get_top_n_gram(tw_list['text'],(2,2),20)
-# print(n2_bigrams)
-n2_bigrams.to_csv('n2_bigrams.csv')
+n2_bigrams = pd.DataFrame(n2_bigrams)
+dfi.export(n2_bigrams, 'results/n2_bigrams.png')
 
-#n3_trigram
-
-n3_trigrams = get_top_n_gram(tw_list['text'],(3,3),20)
-# print(n3_trigrams)
-n3_trigrams.to_csv('n3_bigrams.csv')
-# """
+wb.register('chrome', None)
+wb.open("results/index.html")

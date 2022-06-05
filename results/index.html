@@ -1,0 +1,70 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentimental Analysis On Twitter Feed</title>
+    <style>
+        section{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h2{
+            text-decoration: underline;
+        }
+        img{
+            margin-bottom: 50px;
+        }
+        .div1{
+            display: flex;
+            width: 100%;
+            flex-direction: row;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+        .wc{
+            margin-bottom: 0px;
+            width: 600px;
+        }
+        .div2{
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <h1 style="font-size: 30px;">Sentimental Analysis On Twitter Feed</h1>
+        <h2>Analysed Piechart</h2>
+        <img src="PieCart.png">
+
+        <h2>Tweet Details</h2>
+        <img src="tweetDetail.png">
+
+        <h2>Word Clouds</h2>
+        <div class="div1">
+            <img class="wc" src="Positive_wc.png">
+            <img class="wc" src="Neutral_wc.png">
+            <img class="wc" src="Negative_wc.png">
+        </div>
+        <div class="div1">
+            <h4>Positive WordCloud</h4>
+            <h4>Neutral WordCloud</h4>
+            <h4>Negative WordCloud</h4>
+        </div>
+
+        <div class="div1">
+            <div class="div2">
+                <h2>Most Used Words</h2>
+                <img src="MostUsedWords.png">
+            </div>
+            <div class="div2">
+                <h2>N2 Bigram</h2>
+                <img src="n2_bigrams.png">
+            </div>
+        </div>
+    </section>
+</body>
+</html>
